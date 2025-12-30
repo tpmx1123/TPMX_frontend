@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply scroll-smooth overflow-x-hidden;
+  }
+
+  body {
+    @apply m-0 font-sans antialiased bg-dark-bg text-white overflow-x-hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+
+  #root {
+    @apply w-full min-h-screen;
+  }
+}
+
+@layer utilities {
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .carousel-transform-base {
+    transform: rotateX(-20deg) translateY(-70px);
+  }
+
+  @media (max-width: 1024px) {
+    .carousel-transform-base {
+      transform: rotateX(-15deg) scale(0.9) translateY(-60px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .carousel-transform-base {
+      transform: rotateX(-10deg) scale(0.7) translateY(-50px);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .carousel-transform-base {
+      transform: rotateX(-10deg) scale(0.6) translateY(-60px);
+    }
+  }
+
+  /* Carousel specific styles */
+  .carousel {
+    user-select: none;
+  }
+
+  .carousel-image {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 0.75;
+      transform: translateY(0);
+    }
+  }
+
+  /* Navbar link underline animation */
+  .nav-link {
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    width: 0%;
+    height: 1px;
+    bottom: -4px;
+    left: 0;
+    background: white;
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+}
