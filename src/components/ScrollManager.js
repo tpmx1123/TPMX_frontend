@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 
 const ScrollContext = createContext();
 
@@ -11,30 +10,36 @@ export const ScrollProvider = ({ children }) => {
   const [whatWeDoIndex, setWhatWeDoIndex] = useState(0);
   const animatingRef = useRef(false);
 
-  const handleScroll = (direction) => {
+  // Expose navigation function
+  const navigateToSection = (section, index = 0) => {
+    if (animatingRef.current) return;
+    animatingRef.current = true;
+    
+    if (section === 'hero') {
+      setCurrentSection('hero');
+      setHeroScrollIndex(0);
+      setWhatWeDoIndex(0);
+    } else if (section === 'whatwedo') {
+      setCurrentSection('whatwedo');
+      setWhatWeDoIndex(index);
+    }
+    
+    setTimeout(() => { animatingRef.current = false; }, 800);
+  };
+
+  const handleScroll = useCallback((direction) => {
     if (animatingRef.current) return;
     animatingRef.current = true;
 
     if (currentSection === 'hero') {
       if (direction === 1) {
-        // Scroll down in Hero
-        if (heroScrollIndex < 2) {
-          setHeroScrollIndex(heroScrollIndex + 1);
-          setTimeout(() => { animatingRef.current = false; }, 800);
-        } else {
-          // Move to WhatWeDo
-          setCurrentSection('whatwedo');
-          setWhatWeDoIndex(0);
-          setTimeout(() => { animatingRef.current = false; }, 1200);
-        }
+        // Scroll down in Hero - Move directly to WhatWeDo
+        setCurrentSection('whatwedo');
+        setWhatWeDoIndex(0);
+        setTimeout(() => { animatingRef.current = false; }, 1200);
       } else {
-        // Scroll up in Hero
-        if (heroScrollIndex > 0) {
-          setHeroScrollIndex(heroScrollIndex - 1);
-          setTimeout(() => { animatingRef.current = false; }, 800);
-        } else {
-          animatingRef.current = false;
-        }
+        // Scroll up in Hero - Stay at hero (can't go back from hero)
+        animatingRef.current = false;
       }
     } else if (currentSection === 'whatwedo') {
       if (direction === 1) {
@@ -55,7 +60,7 @@ export const ScrollProvider = ({ children }) => {
         } else {
           // Move back to Hero
           setCurrentSection('hero');
-          setHeroScrollIndex(2);
+          setHeroScrollIndex(0);
           setTimeout(() => { animatingRef.current = false; }, 1200);
         }
       }
@@ -69,7 +74,7 @@ export const ScrollProvider = ({ children }) => {
         animatingRef.current = false;
       }
     }
-  };
+  }, [currentSection, whatWeDoIndex]);
 
   useEffect(() => {
     let lastWheelTime = 0;
@@ -106,7 +111,7 @@ export const ScrollProvider = ({ children }) => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentSection, heroScrollIndex, whatWeDoIndex]);
+  }, [handleScroll]);
 
   return (
     <ScrollContext.Provider
@@ -117,6 +122,7 @@ export const ScrollProvider = ({ children }) => {
         setCurrentSection,
         setHeroScrollIndex,
         setWhatWeDoIndex,
+        navigateToSection,
       }}
     >
       {children}

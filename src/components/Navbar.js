@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { gsap } from 'gsap';
+import { useScroll } from './ScrollManager';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navbarRef = useRef(null);
+  const { navigateToSection } = useScroll();
 
   // Handle scroll effect
   useEffect(() => {
@@ -59,7 +61,13 @@ const Navbar = () => {
             <a
               key={index}
               href={item.href}
-              className="relative text-[0.95rem] font-medium text-white opacity-85 hover:opacity-100 transition-all duration-300 hover:-translate-y-0.5 nav-link"
+              className="relative text-[0.95rem] font-medium text-white opacity-85 hover:opacity-100 transition-all duration-300 hover:-translate-y-0.5 nav-link cursor-pointer"
+              onClick={(e) => {
+                if (item.href === '#home') {
+                  e.preventDefault();
+                  navigateToSection('hero');
+                }
+              }}
             >
               {item.label}
             </a>
@@ -118,8 +126,14 @@ const Navbar = () => {
             <a
               key={index}
               href={item.href}
-              className="text-2xl font-medium text-white opacity-85 hover:opacity-100 transition-all duration-300"
-              onClick={() => setMobileMenuOpen(false)}
+              className="text-2xl font-medium text-white opacity-85 hover:opacity-100 transition-all duration-300 cursor-pointer"
+              onClick={(e) => {
+                if (item.href === '#home') {
+                  e.preventDefault();
+                  navigateToSection('hero');
+                }
+                setMobileMenuOpen(false);
+              }}
             >
               {item.label}
             </a>

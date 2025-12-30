@@ -4,7 +4,7 @@ import Carousel3D from "./Carousel3D";
 import { useScroll } from "./ScrollManager";
 
 const Hero = () => {
-  const { currentSection, heroScrollIndex } = useScroll();
+  const { currentSection } = useScroll();
   const heroRef = useRef(null);
   const marqueeTopRef = useRef(null);
   const marqueeMiddleRef = useRef(null);
@@ -71,18 +71,17 @@ const Hero = () => {
     }
   }, []);
 
-  // Hero scroll states animation
+  // Hero visibility animation
   useEffect(() => {
     if (currentSection === 'hero' && heroRef.current) {
       const hero = heroRef.current;
       gsap.to(hero, {
         opacity: 1,
-        scale: 1 - (heroScrollIndex * 0.05),
         duration: 0.8,
         ease: "power2.out"
       });
     }
-  }, [currentSection, heroScrollIndex]);
+  }, [currentSection]);
 
   return (
     <section
@@ -165,19 +164,6 @@ const Hero = () => {
         </div>
       )}
       
-      {/* Hero Scroll Indicators */}
-      {currentSection === 'hero' && (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {[0, 1, 2].map((index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                heroScrollIndex === index ? 'bg-white w-8' : 'bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-      )}
     </section>
   );
 };
