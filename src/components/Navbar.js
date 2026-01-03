@@ -51,7 +51,7 @@ const Navbar = () => {
     >
       <div className="max-w-[1400px] mx-auto flex items-center justify-between">
         {/* Logo */}
-        <div className="text-xl font-bold tracking-[0.5px] text-white">
+        <div className="text-2xl font-bold tracking-[0.5px] text-white">
           TPM<span className="text-red-500">X</span>
         </div>
 

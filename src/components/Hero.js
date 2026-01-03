@@ -20,7 +20,7 @@ const Hero = () => {
         { x: -width },
         {
           x: 0,
-          duration: 35,
+          duration: 30,
           ease: "none",
           repeat: -1,
           modifiers: {
@@ -57,7 +57,7 @@ const Hero = () => {
         { x: -width },
         {
           x: 0,
-          duration: 40,
+          duration: 30,
           ease: "none",
           repeat: -1,
           modifiers: {
@@ -106,10 +106,12 @@ const Hero = () => {
           {[...Array(8)].map((_, index) => (
             <div
               key={`tech-${index}`}
-              className="reverse-marquee-text text-[10rem] md:text-[16rem] lg:text-[12rem] font-black text-gray-500/50 uppercase tracking-[0.15em] select-none inline-block leading-none mb-20"
+              className="reverse-marquee-text text-[8rem] md:text-[8rem] lg:text-[8rem] font-black  uppercase tracking-[0.15em] select-none inline-block leading-none mb-20 "
               style={{ fontFamily: 'system-ui, sans-serif' }}
             >
-              TECH&nbsp; {" "}
+              <span className="text-white/40">TECH-</span>
+              <span className="text-white/40">PEOPLE-</span>
+              <span className="text-white/40">MEDIA-</span>
             </div>
           ))}
         </div>
@@ -127,10 +129,12 @@ const Hero = () => {
           {[...Array(8)].map((_, index) => (
             <div
               key={`people-${index}`}
-              className="reverse-marquee-text text-[10rem] md:text-[16rem] lg:text-[12rem] font-black text-gray-500/50 uppercase tracking-[0.15em] select-none inline-block leading-none mb-20"
+              className="reverse-marquee-text text-[8rem] md:text-[8rem] lg:text-[8rem] font-black  uppercase tracking-[0.15em] select-none inline-block leading-none mb-20"
               style={{ fontFamily: 'system-ui, sans-serif' }}
             >
-              PEOPLE&nbsp; {" "}
+              <span className="text-white/60">TECH-</span>
+              <span className="text-white/60">PEOPLE-</span>
+              <span className="text-white/60">MEDIA-</span>
             </div>
           ))}
         </div>
@@ -148,10 +152,12 @@ const Hero = () => {
           {[...Array(8)].map((_, index) => (
             <div
               key={`media-${index}`}
-              className="reverse-marquee-text text-[10rem] md:text-[16rem] lg:text-[12rem] font-black text-gray-500/50 uppercase tracking-[0.15em] select-none inline-block leading-none"
+              className="reverse-marquee-text text-[8rem] md:text-[8rem] lg:text-[8rem] font-black  uppercase tracking-[0.15em] select-none inline-block leading-none"
               style={{ fontFamily: 'system-ui, sans-serif' }}
             >
-              MEDIA &nbsp; {" "}
+              <span className="text-white/40">TECH-</span>
+              <span className="text-white/40">PEOPLE-</span>
+              <span className="text-white/40">MEDIA-</span>
             </div>
           ))}
         </div>

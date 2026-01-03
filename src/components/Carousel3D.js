@@ -1,9 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
 const Carousel3D = () => {
     const carouselRef = useRef(null);
     const imagesRef = useRef([]);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const modalRef = useRef(null);
+    const imageRef = useRef(null);
+    const isDraggingRef = useRef(false);
+    const clickStartRef = useRef({ x: 0, y: 0, time: 0 });
 
     useEffect(() => {
         const carousel = carouselRef.current;
@@ -28,6 +33,12 @@ const Carousel3D = () => {
 
         // Handle pointer/mouse events
         const handlePointerDown = (e) => {
+            isDraggingRef.current = false;
+            clickStartRef.current = {
+                x: e.clientX || e.touches?.[0]?.clientX || 0,
+                y: e.clientY || e.touches?.[0]?.clientY || 0,
+                time: Date.now()
+            };
             isDragging = true;
             startX = e.clientX || e.touches?.[0]?.clientX || 0;
             if (carousel) carousel.style.cursor = "grabbing";
@@ -37,7 +48,15 @@ const Carousel3D = () => {
         const handlePointerMove = (e) => {
             if (!isDragging) return;
             const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
+            const currentY = e.clientY || e.touches?.[0]?.clientY || 0;
             const deltaX = currentX - startX;
+            const deltaY = currentY - clickStartRef.current.y;
+            
+            // If user moved more than 5px, consider it a drag
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                isDraggingRef.current = true;
+            }
+            
             startX = currentX;
             
             gsap.killTweensOf(progress);
@@ -77,12 +96,12 @@ const Carousel3D = () => {
                     const x = -Math.sin(theta * Math.PI * 2) * radius;
                     const z = Math.cos(theta * Math.PI * 2) * radius;
 
-                    // Scale based on z-position for equal visual size - reduced to prevent overlap
-                    const scaleFactor = 1 + (z / (radius * 2)) * 0.2;
+                    // All images same size - no scaling based on z-position
+                    const scaleFactor = 1.1;
 
                     // Opacity for depth effect
                     const normalizedZ = (z + radius) / (radius * 2);
-                    const opacity = 0.7 + normalizedZ * 0.3;
+                    const opacity = 1 + normalizedZ * 1;
 
                     image.style.transform = `
                         translate3d(${x}px, 0px, ${z}px)
@@ -121,7 +140,64 @@ const Carousel3D = () => {
         };
     }, []);
 
+    // Animate modal when image is selected/deselected
+    useEffect(() => {
+        if (selectedImage && modalRef.current && imageRef.current) {
+            // Open animation
+            gsap.fromTo(
+                modalRef.current,
+                { opacity: 0 },
+                { opacity: 1, duration: 0.3, ease: "power2.out" }
+            );
+            gsap.fromTo(
+                imageRef.current,
+                { scale: 0.8, opacity: 0 },
+                { scale: 1, opacity: 1, duration: 0.5, ease: "power3.out", delay: 0.1 }
+            );
+        } else if (!selectedImage && modalRef.current && imageRef.current) {
+            // Close animation
+            gsap.to(imageRef.current, {
+                scale: 0.8,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.in"
+            });
+            gsap.to(modalRef.current, {
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.in",
+                delay: 0.1,
+                onComplete: () => {
+                    // Modal is already removed from DOM, but we ensure cleanup
+                }
+            });
+        }
+    }, [selectedImage]);
+
+    // Handle ESC key to close modal
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape' && selectedImage) {
+                setSelectedImage(null);
+            }
+        };
+        
+        if (selectedImage) {
+            window.addEventListener('keydown', handleKeyDown);
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = '';
+        };
+    }, [selectedImage]);
+
     return (
+        <>
         <div
             ref={carouselRef}
             className="
@@ -149,12 +225,13 @@ const Carousel3D = () => {
                     className="
                         carousel-image
                         absolute  
-                        w-[210px] h-[210px]
+                        w-[210px] h-[260px]
                         -translate-x-1/2 -translate-y-1/2
                         [transform-style:preserve-3d]
                         rounded-lg
                         overflow-hidden
                         shadow-2xl
+                        cursor-pointer
                     "
                     style={{
                         background: item.id % 3 === 0 ? '#1e293b' : item.id % 2 === 0 ? '#334155' : '#0f172a',
@@ -162,6 +239,28 @@ const Carousel3D = () => {
                     ref={(el) => {
                         if (el) {
                             imagesRef.current[index] = el;
+                        }
+                    }}
+                    onClick={(e) => {
+                        // Prevent click if user was dragging
+                        if (isDraggingRef.current) {
+                            e.stopPropagation();
+                            return;
+                        }
+                        
+                        // Check if it was a quick click (not a drag)
+                        const clickDuration = clickStartRef.current.time 
+                            ? Date.now() - clickStartRef.current.time 
+                            : 0;
+                        
+                        // If click duration is reasonable (less than 300ms) or if time wasn't tracked, treat as click
+                        if (clickDuration < 300 || clickDuration === 0) {
+                            setSelectedImage({
+                                id: item.id,
+                                number: item.number,
+                                label: item.label,
+                                imageUrl: `https://picsum.photos/600/800?random=${item.id}`
+                            });
                         }
                     }}
                 >
@@ -215,6 +314,71 @@ const Carousel3D = () => {
                 </div>
             ))}
         </div>
+
+        {/* Full Screen Image Modal */}
+        {selectedImage && (
+            <div
+                ref={modalRef}
+                className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center cursor-pointer"
+                onClick={() => setSelectedImage(null)}
+                style={{ display: 'flex' }}
+            >
+                {/* Close Button */}
+                <button
+                    className="absolute top-16 right-6 z-[100] text-white hover:text-white/80 transition-colors pointer-events-auto cursor-pointer p-2 bg-black/50 hover:bg-black/70 rounded-full backdrop-blur-sm"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedImage(null);
+                    }}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                    aria-label="Close"
+                    type="button"
+                    style={{ zIndex: 10000 }}
+                >
+                    <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+
+                {/* Image Container */}
+                <div
+                    ref={imageRef}
+                    className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center p-8 pointer-events-auto"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <img
+                        src={selectedImage.imageUrl}
+                        alt={selectedImage.label}
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                    />
+                    
+                    {/* Image Info Overlay */}
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center z-10">
+                        <div className="text-white/60 text-sm font-mono font-bold mb-2">
+                            {selectedImage.number}
+                        </div>
+                        <div className="text-white text-lg uppercase tracking-wider font-light">
+                            {selectedImage.label}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 

@@ -6,22 +6,22 @@ export const useScroll = () => useContext(ScrollContext);
 
 export const ScrollProvider = ({ children }) => {
   const [currentSection, setCurrentSection] = useState('hero');
-  const [heroScrollIndex, setHeroScrollIndex] = useState(0);
   const [whatWeDoIndex, setWhatWeDoIndex] = useState(0);
   const animatingRef = useRef(false);
 
   // Expose navigation function
-  const navigateToSection = (section, index = 0) => {
+  const navigateToSection = (section) => {
     if (animatingRef.current) return;
     animatingRef.current = true;
     
     if (section === 'hero') {
       setCurrentSection('hero');
-      setHeroScrollIndex(0);
       setWhatWeDoIndex(0);
     } else if (section === 'whatwedo') {
       setCurrentSection('whatwedo');
-      setWhatWeDoIndex(index);
+      setWhatWeDoIndex(0);
+    } else if (section === 'whywe') {
+      setCurrentSection('whywe');
     }
     
     setTimeout(() => { animatingRef.current = false; }, 800);
@@ -33,45 +33,44 @@ export const ScrollProvider = ({ children }) => {
 
     if (currentSection === 'hero') {
       if (direction === 1) {
-        // Scroll down in Hero - Move directly to WhatWeDo
+        // Scroll down from Hero to WhatWeDo
         setCurrentSection('whatwedo');
-        setWhatWeDoIndex(0);
         setTimeout(() => { animatingRef.current = false; }, 1200);
       } else {
-        // Scroll up in Hero - Stay at hero (can't go back from hero)
-        animatingRef.current = false;
+        // Scroll up in Hero - stay at hero
+        setTimeout(() => { animatingRef.current = false; }, 800);
       }
     } else if (currentSection === 'whatwedo') {
       if (direction === 1) {
-        // Scroll down in WhatWeDo
+        // Scroll down in WhatWeDo - show cards sequentially
         if (whatWeDoIndex < 3) {
           setWhatWeDoIndex(whatWeDoIndex + 1);
           setTimeout(() => { animatingRef.current = false; }, 1200);
         } else {
-          // Move to next section
-          setCurrentSection('next');
+          // After all cards shown, go to WhyWe
+          setCurrentSection('whywe');
           setTimeout(() => { animatingRef.current = false; }, 1200);
         }
       } else {
-        // Scroll up in WhatWeDo
+        // Scroll up in WhatWeDo - hide cards or go back to Hero
         if (whatWeDoIndex > 0) {
           setWhatWeDoIndex(whatWeDoIndex - 1);
           setTimeout(() => { animatingRef.current = false; }, 1200);
         } else {
-          // Move back to Hero
+          // Go back to Hero
           setCurrentSection('hero');
-          setHeroScrollIndex(0);
           setTimeout(() => { animatingRef.current = false; }, 1200);
         }
       }
-    } else if (currentSection === 'next') {
-      if (direction === -1) {
-        // Scroll up from next section
-        setCurrentSection('whatwedo');
-        setWhatWeDoIndex(3); // Start at media
-        setTimeout(() => { animatingRef.current = false; }, 1200);
+    } else if (currentSection === 'whywe') {
+      if (direction === 1) {
+        // Scroll down in WhyWe - stay at WhyWe (or go to next section if added)
+        setTimeout(() => { animatingRef.current = false; }, 800);
       } else {
-        animatingRef.current = false;
+        // Scroll up in WhyWe - go back to WhatWeDo
+        setCurrentSection('whatwedo');
+        setWhatWeDoIndex(3); // Keep cards visible
+        setTimeout(() => { animatingRef.current = false; }, 1200);
       }
     }
   }, [currentSection, whatWeDoIndex]);
@@ -117,11 +116,7 @@ export const ScrollProvider = ({ children }) => {
     <ScrollContext.Provider
       value={{
         currentSection,
-        heroScrollIndex,
         whatWeDoIndex,
-        setCurrentSection,
-        setHeroScrollIndex,
-        setWhatWeDoIndex,
         navigateToSection,
       }}
     >
